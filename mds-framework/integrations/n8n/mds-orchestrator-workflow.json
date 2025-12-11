@@ -1,0 +1,413 @@
+{
+  "name": "MDS Framework - Master Orchestrator",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "mds/invoke",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// MDS Request Parser\nconst request = $input.first().json.body;\n\nreturn {\n  type: request.type || 'agent',\n  target: request.target || 'delivery-lead',\n  action: request.action,\n  input: request.input || {},\n  context: {\n    clientName: request.clientName || 'Unknown',\n    projectId: request.projectId,\n    sessionId: `mds-${Date.now()}`\n  },\n  options: {\n    mode: request.mode || 'interactive',\n    verbose: request.verbose || false\n  }\n};"
+      },
+      "id": "parse-request",
+      "name": "Parse Request",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.target }}",
+              "operation": "equals",
+              "value2": "delivery-lead"
+            },
+            {
+              "value1": "={{ $json.target }}",
+              "operation": "equals",
+              "value2": "solution-architect"
+            },
+            {
+              "value1": "={{ $json.target }}",
+              "operation": "equals",
+              "value2": "tech-lead"
+            },
+            {
+              "value1": "={{ $json.target }}",
+              "operation": "equals",
+              "value2": "qa-agent"
+            },
+            {
+              "value1": "={{ $json.target }}",
+              "operation": "equals",
+              "value2": "client-success"
+            }
+          ]
+        }
+      },
+      "id": "agent-router",
+      "name": "Agent Router",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 2,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "model": "models/gemini-pro",
+        "prompt": {
+          "messages": [
+            {
+              "role": "system",
+              "content": "You are Alex, a Delivery Lead with 10+ years experience. You orchestrate project delivery, manage stakeholders, and ensure successful outcomes.\n\nCommunication Style: Professional yet personable. Client-focused. Use structured updates with clear action items.\n\nPrinciples:\n1. Client success is the only metric that matters\n2. Transparency builds trust\n3. Every interaction should move the engagement forward\n\nContext:\n- Client: {{ $json.context.clientName }}\n- Session: {{ $json.context.sessionId }}"
+            },
+            {
+              "role": "user",
+              "content": "={{ $json.input.message || $json.action }}"
+            }
+          ]
+        },
+        "options": {
+          "temperature": 0.7,
+          "maxOutputTokens": 2048
+        }
+      },
+      "id": "delivery-lead-agent",
+      "name": "Delivery Lead Agent",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [900, 100],
+      "credentials": {
+        "googleAi": {
+          "id": "google-ai-creds",
+          "name": "Google AI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "models/gemini-pro",
+        "prompt": {
+          "messages": [
+            {
+              "role": "system",
+              "content": "You are Morgan, a Solution Architect with deep expertise in cloud platforms and enterprise integration.\n\nCommunication Style: Explains complex concepts accessibly. Uses diagrams and visual models. Ties technical decisions to business value.\n\nPrinciples:\n1. Architecture serves the business\n2. Simplicity is the ultimate sophistication\n3. Design for change\n\nContext:\n- Client: {{ $json.context.clientName }}\n- Session: {{ $json.context.sessionId }}"
+            },
+            {
+              "role": "user",
+              "content": "={{ $json.input.message || $json.action }}"
+            }
+          ]
+        },
+        "options": {
+          "temperature": 0.7
+        }
+      },
+      "id": "solution-architect-agent",
+      "name": "Solution Architect Agent",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [900, 250],
+      "credentials": {
+        "googleAi": {
+          "id": "google-ai-creds",
+          "name": "Google AI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "models/gemini-pro",
+        "prompt": {
+          "messages": [
+            {
+              "role": "system",
+              "content": "You are Jordan, a Tech Lead with passion for clean code and pragmatic engineering.\n\nCommunication Style: Technical and precise but approachable. Uses code examples. Explains the 'why' behind best practices.\n\nPrinciples:\n1. Code is read more than written - optimize for clarity\n2. Tests are documentation that doesn't lie\n3. Technical debt is a choice - make it consciously\n\nContext:\n- Client: {{ $json.context.clientName }}\n- Session: {{ $json.context.sessionId }}"
+            },
+            {
+              "role": "user",
+              "content": "={{ $json.input.message || $json.action }}"
+            }
+          ]
+        },
+        "options": {
+          "temperature": 0.7
+        }
+      },
+      "id": "tech-lead-agent",
+      "name": "Tech Lead Agent",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [900, 400],
+      "credentials": {
+        "googleAi": {
+          "id": "google-ai-creds",
+          "name": "Google AI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "models/gemini-pro",
+        "prompt": {
+          "messages": [
+            {
+              "role": "system",
+              "content": "You are Taylor, a QA Lead expert at finding edge cases and ensuring quality.\n\nCommunication Style: Detail-oriented but knows when to summarize. Reports issues with clear reproduction steps.\n\nPrinciples:\n1. Quality is everyone's responsibility\n2. Prevention is better than detection\n3. Every bug is a test case you didn't write\n\nContext:\n- Client: {{ $json.context.clientName }}\n- Session: {{ $json.context.sessionId }}"
+            },
+            {
+              "role": "user",
+              "content": "={{ $json.input.message || $json.action }}"
+            }
+          ]
+        },
+        "options": {
+          "temperature": 0.7
+        }
+      },
+      "id": "qa-agent",
+      "name": "QA Agent",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [900, 550],
+      "credentials": {
+        "googleAi": {
+          "id": "google-ai-creds",
+          "name": "Google AI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "models/gemini-pro",
+        "prompt": {
+          "messages": [
+            {
+              "role": "system",
+              "content": "You are Casey, a Client Success Manager dedicated to client satisfaction and partnership success.\n\nCommunication Style: Warm, empathetic, genuinely interested in client success. Active listener.\n\nPrinciples:\n1. The client's success is our success\n2. Listen more than you speak\n3. Under-promise, over-deliver\n\nContext:\n- Client: {{ $json.context.clientName }}\n- Session: {{ $json.context.sessionId }}"
+            },
+            {
+              "role": "user",
+              "content": "={{ $json.input.message || $json.action }}"
+            }
+          ]
+        },
+        "options": {
+          "temperature": 0.7
+        }
+      },
+      "id": "client-success-agent",
+      "name": "Client Success Agent",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [900, 700],
+      "credentials": {
+        "googleAi": {
+          "id": "google-ai-creds",
+          "name": "Google AI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Format agent response\nconst input = $input.first().json;\nconst agentResponse = $('Agent Response').first().json;\n\nreturn {\n  success: true,\n  sessionId: input.context?.sessionId,\n  agent: input.target,\n  response: agentResponse.text || agentResponse.content,\n  timestamp: new Date().toISOString(),\n  metadata: {\n    model: 'gemini-pro',\n    tokens: agentResponse.usage || null\n  }\n};"
+      },
+      "id": "format-response",
+      "name": "Format Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1150, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}",
+        "options": {
+          "responseCode": 200,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      },
+      "id": "respond",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1350, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Store interaction in database (placeholder)\nconst response = $input.first().json;\n\n// In production, store to PostgreSQL/Firebase\nconsole.log('Storing interaction:', response.sessionId);\n\nreturn response;"
+      },
+      "id": "store-interaction",
+      "name": "Store Interaction",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1150, 500]
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Parse Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Request": {
+      "main": [
+        [
+          {
+            "node": "Agent Router",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agent Router": {
+      "main": [
+        [
+          {
+            "node": "Delivery Lead Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Solution Architect Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Tech Lead Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "QA Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Client Success Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delivery Lead Agent": {
+      "main": [
+        [
+          {
+            "node": "Format Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Solution Architect Agent": {
+      "main": [
+        [
+          {
+            "node": "Format Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tech Lead Agent": {
+      "main": [
+        [
+          {
+            "node": "Format Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "QA Agent": {
+      "main": [
+        [
+          {
+            "node": "Format Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Client Success Agent": {
+      "main": [
+        [
+          {
+            "node": "Format Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Response": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Store Interaction",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "name": "MDS Framework"
+    },
+    {
+      "name": "AI Agents"
+    }
+  ],
+  "triggerCount": 1,
+  "updatedAt": "2024-01-15T00:00:00.000Z",
+  "versionId": "1"
+}

@@ -1,0 +1,179 @@
+# MDS Framework - Client Configuration Template
+# Copy this file to .mds/config.yaml in your project root
+
+# ============================================================================
+# CLIENT INFORMATION
+# ============================================================================
+
+client:
+  # Client identifier (used in file paths and references)
+  id: "{{client_id}}"
+
+  # Client display name
+  name: "{{client_name}}"
+
+  # Industry vertical
+  industry: "{{industry}}"
+  # Options: financial_services, healthcare, technology, manufacturing, retail, other
+
+  # Client communication preferences
+  preferences:
+    # Communication tone
+    communication_style: "formal"
+    # Options: formal, casual, technical
+
+    # Preferred document format
+    document_format: "markdown"
+    # Options: markdown, docx, pdf
+
+    # Primary language
+    language: "English"
+
+    # Timezone for scheduling
+    timezone: "America/New_York"
+
+# ============================================================================
+# ENGAGEMENT DETAILS
+# ============================================================================
+
+engagement:
+  # Unique engagement identifier
+  id: "{{engagement_id}}"
+
+  # Engagement type
+  type: "consulting"
+  # Options: consulting, development, delivery, managed_services, custom
+
+  # Engagement name/title
+  name: "{{engagement_name}}"
+
+  # Start date
+  start_date: "{{start_date}}"
+
+  # Expected duration
+  duration: "{{duration}}"
+
+  # Current phase
+  current_phase: "discovery"
+  # Options: discovery, planning, execution, closure
+
+# ============================================================================
+# TEAM CONFIGURATION
+# ============================================================================
+
+team:
+  # Primary delivery lead
+  delivery_lead:
+    name: "{{your_name}}"
+    email: "{{your_email}}"
+
+  # Team members (optional)
+  members: []
+  # Example:
+  # - name: "Team Member"
+  #   role: "Developer"
+  #   email: "member@company.com"
+
+# ============================================================================
+# CLIENT CONTACTS
+# ============================================================================
+
+contacts:
+  # Primary client contact
+  primary:
+    name: "{{client_contact_name}}"
+    role: "{{client_contact_role}}"
+    email: "{{client_contact_email}}"
+
+  # Additional stakeholders (optional)
+  stakeholders: []
+  # Example:
+  # - name: "Stakeholder Name"
+  #   role: "Executive Sponsor"
+  #   email: "stakeholder@client.com"
+
+# ============================================================================
+# OUTPUT CONFIGURATION
+# ============================================================================
+
+output:
+  # Where to store generated artifacts
+  folder: "docs/{{client_id}}"
+
+  # Document naming pattern
+  naming:
+    pattern: "{client_id}-{type}-{date}"
+    date_format: "YYYY-MM-DD"
+
+  # Enable version tracking
+  versioning: true
+
+# ============================================================================
+# ENABLED MODULES
+# ============================================================================
+
+modules:
+  # Delivery module (project management, status reporting)
+  delivery:
+    enabled: true
+
+  # Consulting module (discovery, solution design)
+  consulting:
+    enabled: true
+
+  # Development module (technical implementation)
+  development:
+    enabled: false
+
+  # Custom modules
+  custom: []
+
+# ============================================================================
+# INTEGRATION SETTINGS
+# ============================================================================
+
+integrations:
+  # Google AI Studio
+  google_ai:
+    enabled: true
+    # API key should be set via environment variable: MDS_GOOGLE_AI_KEY
+
+  # n8n Workflows
+  n8n:
+    enabled: false
+    base_url: ""
+    # API key should be set via environment variable: MDS_N8N_KEY
+
+  # Database for state persistence
+  database:
+    enabled: false
+    type: "sqlite"
+    # Connection string via environment: MDS_DATABASE_URL
+
+# ============================================================================
+# NOTIFICATION SETTINGS
+# ============================================================================
+
+notifications:
+  slack:
+    enabled: false
+    webhook_url: ""
+    channel: "#project-updates"
+
+  email:
+    enabled: false
+    recipients: []
+
+# ============================================================================
+# QUALITY SETTINGS
+# ============================================================================
+
+quality:
+  # Require validation before marking workflows complete
+  validation_required: true
+
+  # Run checklists in strict mode (all items must pass)
+  strict_mode: false
+
+  # Require review before client delivery
+  review_before_delivery: true

@@ -1,0 +1,66 @@
+# MDS Framework - Discovery Kickoff Workflow
+# Initiates the discovery phase for a new engagement
+
+name: "discovery-kickoff"
+description: "Structured kickoff process for new client engagements"
+author: "MDS Framework"
+version: "1.0.0"
+
+# Configuration
+config_source: "{project-root}/.mds/config.yaml"
+variables:
+  client_name:
+    source: config
+    path: "client.name"
+  engagement_type:
+    source: config
+    path: "engagement.type"
+  output_folder:
+    source: config
+    path: "output.folder"
+  communication_style:
+    source: config
+    path: "client.preferences.communicationStyle"
+  date:
+    source: system
+    path: "date"
+
+# Workflow Components
+installed_path: "{project-root}/.mds/core/workflows/discovery/kickoff"
+template: "{installed_path}/template.md"
+instructions: "{installed_path}/instructions.md"
+validation: "{installed_path}/checklist.md"
+
+# Input patterns for context discovery
+input_file_patterns:
+  - name: "client_profile"
+    pattern: ".mds/clients/{{client_name}}/*.md"
+    strategy: "full_load"
+  - name: "engagement_docs"
+    pattern: ".mds/engagements/{{engagement_id}}/*.md"
+    strategy: "index_guided"
+
+# Output
+default_output_file: "{output_folder}/discovery/kickoff-{{date}}.md"
+
+# Execution options
+standalone: true
+modes:
+  - name: "interactive"
+    description: "Full facilitated kickoff with user interaction"
+    entryStep: 1
+  - name: "quick"
+    description: "Abbreviated kickoff for returning clients"
+    entryStep: 3
+  - name: "autonomous"
+    description: "Generate kickoff from existing documentation"
+    entryStep: 1
+
+# Integration
+web_bundle:
+  name: "discovery-kickoff"
+  description: "Engagement kickoff workflow"
+  files:
+    - "{installed_path}/template.md"
+    - "{installed_path}/instructions.md"
+    - "{installed_path}/checklist.md"

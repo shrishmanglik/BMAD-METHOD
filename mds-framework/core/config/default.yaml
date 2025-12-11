@@ -1,0 +1,124 @@
+# MDS Framework - Default Configuration
+# This is the base configuration that all projects inherit from
+
+# ============================================================================
+# CORE SETTINGS
+# ============================================================================
+
+core:
+  version: "1.0.0"
+  framework: "MDS"
+  language: "English"
+  document_language: "English"
+
+# ============================================================================
+# OUTPUT SETTINGS
+# ============================================================================
+
+output:
+  folder: "docs"
+  format: "markdown"
+  naming:
+    pattern: "{type}-{date}"
+    date_format: "YYYY-MM-DD"
+  versioning: true
+
+# ============================================================================
+# AGENT DEFAULTS
+# ============================================================================
+
+agents:
+  default_model: "gemini-pro"
+  temperature: 0.7
+  max_tokens: 2048
+
+  # Available agents
+  roster:
+    - id: "delivery-lead"
+      name: "Alex"
+      enabled: true
+    - id: "solution-architect"
+      name: "Morgan"
+      enabled: true
+    - id: "tech-lead"
+      name: "Jordan"
+      enabled: true
+    - id: "qa-agent"
+      name: "Taylor"
+      enabled: true
+    - id: "client-success"
+      name: "Casey"
+      enabled: true
+
+# ============================================================================
+# WORKFLOW DEFAULTS
+# ============================================================================
+
+workflows:
+  checkpoint_frequency: "step"  # step, section, or manual
+  auto_save: true
+  validation_required: true
+
+  # Default phases
+  phases:
+    - id: "discovery"
+      name: "Discovery"
+      order: 1
+    - id: "planning"
+      name: "Planning"
+      order: 2
+    - id: "execution"
+      name: "Execution"
+      order: 3
+    - id: "closure"
+      name: "Closure"
+      order: 4
+
+# ============================================================================
+# QUALITY SETTINGS
+# ============================================================================
+
+quality:
+  validation:
+    enabled: true
+    strict_mode: false
+
+  review:
+    required_before_delivery: true
+    checklist_validation: true
+
+# ============================================================================
+# INTEGRATION DEFAULTS
+# ============================================================================
+
+integrations:
+  google_ai:
+    enabled: true
+    model: "gemini-pro"
+
+  n8n:
+    enabled: false
+    base_url: ""
+
+  database:
+    enabled: false
+    type: "sqlite"
+
+# ============================================================================
+# NOTIFICATION DEFAULTS
+# ============================================================================
+
+notifications:
+  slack:
+    enabled: false
+  email:
+    enabled: false
+
+# ============================================================================
+# LOGGING
+# ============================================================================
+
+logging:
+  level: "info"  # debug, info, warn, error
+  include_timestamps: true
+  store_history: true
