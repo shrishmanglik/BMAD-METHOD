@@ -1,0 +1,345 @@
+# BMAD Framework - Agent Contract
+# Version: 2.0.0
+#
+# This contract defines the interface and lifecycle for BMAD agents.
+# All agents must conform to this contract to ensure consistent behavior.
+
+contract:
+  name: Agent Contract
+  version: "2.0.0"
+  description: |
+    Defines the standard interface, lifecycle, and capabilities that all
+    BMAD agents must implement to participate in the framework.
+
+# ============================================================================
+# Structure Definition
+# ============================================================================
+
+structure:
+  agent:
+    metadata:
+      required:
+        - id: string          # Unique identifier in format .bmad/[module]/agents/[name].md
+        - name: string        # Human-readable agent name
+        - title: string       # Agent title/role
+        - icon: string        # Emoji icon for display
+      optional:
+        - module: string      # Module code (bmm, bmb, cis, bmgd)
+        - version: string     # Agent version
+        - author: string      # Agent author
+        - tags: string[]      # Tags for discovery
+
+    persona:
+      required:
+        - role: string        # Primary role description
+        - identity: string    # Background and expertise
+        - communication_style: string  # How agent communicates
+        - principles: string | string[]  # Core operational principles
+      optional:
+        - expertise: string[] # Areas of specialized knowledge
+        - limitations: string[]  # Known limitations
+
+    critical_actions:
+      type: string[]
+      description: Actions executed on agent load
+
+    menu:
+      type: MenuItem[]
+      min_items: 1
+      description: Available commands and actions
+
+    prompts:
+      type: Prompt[]
+      description: Custom prompts for injection
+
+    lifecycle:
+      optional:
+        - on_load: string[]      # Actions on load
+        - on_activate: string[]  # Actions on activation
+        - on_deactivate: string[] # Actions on deactivation
+        - on_error: string[]     # Error handling actions
+        - before_command: string[] # Pre-command actions
+        - after_command: string[] # Post-command actions
+
+    capabilities:
+      type: Capability[]
+      description: Agent capabilities for discovery
+
+# ============================================================================
+# Menu Item Definition
+# ============================================================================
+
+menu_item:
+  legacy_format:
+    required:
+      - trigger: string       # Kebab-case command trigger
+      - description: string   # User-facing description
+    command_target:           # At least one required
+      - workflow: string      # Workflow path
+      - exec: string          # Markdown/file to execute
+      - action: string        # Inline action
+      - tmpl: string          # Template path
+      - data: string          # Data reference
+    optional:
+      - checklist: string     # Validation checklist
+      - document: string      # Document reference
+      - ide-only: boolean     # IDE-only command
+      - web-only: boolean     # Web-only command
+      - discussion: boolean   # Enables discussion mode
+      - deprecated: boolean   # Marks as deprecated
+
+  multi_format:
+    required:
+      - multi: string         # Group description
+      - triggers: Trigger[]   # Array of triggers
+    optional:
+      - discussion: boolean
+
+# ============================================================================
+# Lifecycle States
+# ============================================================================
+
+lifecycle:
+  states:
+    - unloaded:
+        description: Agent definition not loaded
+        transitions:
+          - loading
+
+    - loading:
+        description: Agent is being loaded and initialized
+        transitions:
+          - loaded
+          - error
+
+    - loaded:
+        description: Agent loaded but not active
+        transitions:
+          - active
+          - unloaded
+
+    - active:
+        description: Agent is the current active agent
+        transitions:
+          - suspended
+          - error
+
+    - suspended:
+        description: Agent temporarily suspended
+        transitions:
+          - active
+          - unloaded
+
+    - error:
+        description: Agent encountered an error
+        transitions:
+          - loading
+          - unloaded
+
+  events:
+    - LOAD:
+        from: unloaded
+        to: loading
+        actions:
+          - Validate agent definition
+          - Load persisted memory
+          - Execute critical_actions
+          - Execute on_load hooks
+
+    - ACTIVATE:
+        from: [loaded, suspended]
+        to: active
+        actions:
+          - Deactivate current active agent
+          - Execute on_activate hooks
+          - Set agent as active
+
+    - DEACTIVATE:
+        from: active
+        to: suspended
+        actions:
+          - Execute on_deactivate hooks
+          - Persist agent memory
+          - Calculate active time
+
+    - UNLOAD:
+        from: [loaded, suspended, error]
+        to: unloaded
+        actions:
+          - Persist final memory state
+          - Clean up resources
+
+    - ERROR:
+        from: [loading, active]
+        to: error
+        actions:
+          - Execute on_error hooks
+          - Log error details
+          - Notify error handler
+
+# ============================================================================
+# Command Execution
+# ============================================================================
+
+command_execution:
+  flow:
+    1_receive:
+      description: Receive command trigger from user
+      validate:
+        - Trigger exists in menu
+        - Command is not deprecated (or warn)
+        - Platform restrictions (ide-only, web-only)
+
+    2_prepare:
+      description: Prepare command for execution
+      actions:
+        - Resolve variable references in target path
+        - Execute before_command hooks
+        - Load required resources
+
+    3_execute:
+      description: Execute the command
+      based_on_type:
+        workflow:
+          - Load workflow definition
+          - Initialize workflow execution
+          - Start workflow engine
+
+        exec:
+          - Load markdown file
+          - Present content to user/LLM
+          - Track execution state
+
+        action:
+          - Execute inline action
+          - Return action result
+
+        tmpl:
+          - Load template
+          - Resolve template variables
+          - Present filled template
+
+        data:
+          - Load data file
+          - Present data to context
+
+    4_complete:
+      description: Complete command execution
+      actions:
+        - Execute after_command hooks
+        - Update command statistics
+        - Persist memory changes
+
+# ============================================================================
+# Memory Management
+# ============================================================================
+
+memory:
+  types:
+    - session:
+        description: Temporary memory for current session
+        persistence: none
+        lifetime: session
+
+    - sidecar:
+        description: Persistent memory across sessions
+        persistence: file
+        lifetime: permanent
+        location: "{agent_sidecar_folder}/{agent_id}/"
+
+    - context:
+        description: Runtime context for current operation
+        persistence: none
+        lifetime: operation
+
+  operations:
+    - get(key): Retrieve value from memory
+    - set(key, value): Store value in memory
+    - delete(key): Remove value from memory
+    - clear(): Clear all memory
+    - persist(): Save to persistent storage
+    - restore(): Load from persistent storage
+
+# ============================================================================
+# Inter-Agent Communication
+# ============================================================================
+
+communication:
+  patterns:
+    - handoff:
+        description: Transfer control to another agent
+        maintains: Context and memory state
+        triggers: Deactivation of current agent
+
+    - party_mode:
+        description: Multi-agent discussion
+        participants: Multiple agents simultaneously
+        orchestrator: BMad Master or designated leader
+
+    - delegation:
+        description: Request another agent to perform task
+        returns: Control to requesting agent
+
+  protocols:
+    context_sharing:
+      - Project context (project-context.md)
+      - Workflow state
+      - Shared memory namespace
+
+    message_format:
+      from: agent_id
+      to: agent_id | "broadcast"
+      type: request | response | notification
+      payload: any
+      correlation_id: string
+
+# ============================================================================
+# Validation Rules
+# ============================================================================
+
+validation:
+  metadata:
+    - id must match path pattern: .bmad/[module]/agents/[name].md
+    - name must be non-empty
+    - icon should be a valid emoji
+    - module must be one of: bmm, bmb, cis, bmgd (or omitted for core)
+
+  persona:
+    - All required fields must be non-empty
+    - principles should provide clear guidance
+
+  menu:
+    - At least one menu item required
+    - All triggers must be kebab-case
+    - No duplicate triggers within agent
+    - Each item must have at least one command target
+
+  cross_validation:
+    - metadata.module must match path if both present
+    - discussion requires conversational_knowledge (recommended)
+    - deprecated items should have deprecated-message
+
+# ============================================================================
+# Extension Points
+# ============================================================================
+
+extensions:
+  hooks:
+    - agent:before-load
+    - agent:after-load
+    - agent:before-activate
+    - agent:after-activate
+    - agent:before-command
+    - agent:after-command
+    - agent:error
+
+  customization:
+    - Persona modification
+    - Menu item addition/removal
+    - Prompt injection
+    - Critical action override
+
+  capabilities:
+    - Custom command types
+    - Memory providers
+    - Communication protocols

@@ -1,0 +1,443 @@
+# BMAD Framework - Workflow Contract
+# Version: 2.0.0
+#
+# This contract defines the interface and execution model for BMAD workflows.
+# All workflows must conform to this contract to ensure consistent behavior.
+
+contract:
+  name: Workflow Contract
+  version: "2.0.0"
+  description: |
+    Defines the standard interface, execution model, and state management
+    for BMAD workflows. Supports both YAML-based and Markdown-based workflows.
+
+# ============================================================================
+# Workflow Types
+# ============================================================================
+
+workflow_types:
+  yaml_workflow:
+    description: Configuration-driven workflow defined in YAML
+    file: workflow.yaml
+    features:
+      - Declarative configuration
+      - Variable resolution
+      - Input/output specification
+      - Standalone execution support
+
+  markdown_workflow:
+    description: Step-based workflow with sequential execution
+    file: workflow.md
+    features:
+      - Micro-file architecture
+      - Sequential step progression
+      - User approval gates
+      - Document state tracking
+      - Append-only document building
+
+# ============================================================================
+# YAML Workflow Structure
+# ============================================================================
+
+yaml_structure:
+  required:
+    - name: string            # Workflow identifier
+    - description: string     # User-facing description
+
+  optional:
+    # Metadata
+    - author: string
+    - version: string
+    - module: string
+    - tags: string[]
+    - phase: string           # analysis, planning, solutioning, implementation
+    - category: string
+
+    # Configuration
+    - config_source: string   # Path to config file
+    - variables: Variable[]   # Workflow variables
+
+    # Paths
+    - installed_path: string  # Workflow installation path
+    - instructions: string    # Instructions file
+    - validation: string      # Validation checklist
+
+    # Inputs/Outputs
+    - inputs: Input[]         # Input file patterns
+    - outputs: Output[]       # Output specifications
+
+    # Execution
+    - standalone: boolean     # Can run without agent
+    - web_bundle: boolean     # Include in web bundles
+    - parallel_execution: boolean
+    - timeout_ms: number
+
+    # Dependencies
+    - requires_agents: string[]
+    - requires_workflows: string[]
+    - requires_tools: string[]
+
+    # Hooks
+    - hooks: WorkflowHooks
+
+# ============================================================================
+# Markdown Workflow Structure
+# ============================================================================
+
+markdown_structure:
+  frontmatter:
+    required:
+      - name: string
+      - description: string
+    optional:
+      - web_bundle: boolean
+      - version: string
+      - author: string
+      - current_step: string
+      - completed_steps: string[]
+      - status: string        # not_started, in_progress, completed, failed
+      - started_at: datetime
+      - completed_at: datetime
+      - variables: object
+
+  body:
+    sections:
+      - workflow_architecture:
+          description: Explain micro-file architecture
+          content: Step structure and execution rules
+
+      - initialization:
+          description: Configuration loading
+          content: Variables and paths to resolve
+
+      - execution:
+          description: Entry point
+          content: Load first step file
+
+  step_files:
+    location: steps/step-XX-name.md
+    naming: step-01-init.md, step-02-discover.md, etc.
+    frontmatter:
+      - step_id: string
+      - step_name: string
+      - dependencies: string[]
+      - outputs: string[]
+      - validation_required: boolean
+      - user_approval_required: boolean
+
+# ============================================================================
+# Execution States
+# ============================================================================
+
+execution:
+  states:
+    - idle:
+        description: Workflow not started
+        transitions:
+          - initializing
+
+    - initializing:
+        description: Loading configuration and resources
+        transitions:
+          - running
+          - failed
+
+    - running:
+        description: Actively executing steps
+        transitions:
+          - paused
+          - waiting_user
+          - completed
+          - failed
+
+    - paused:
+        description: Temporarily paused
+        transitions:
+          - running
+          - cancelled
+
+    - waiting_user:
+        description: Waiting for user input/approval
+        transitions:
+          - running
+          - cancelled
+
+    - completed:
+        description: All steps finished successfully
+        transitions: []  # Terminal state
+
+    - failed:
+        description: Execution failed with error
+        transitions:
+          - running  # Via recovery
+
+    - cancelled:
+        description: Cancelled by user
+        transitions: []  # Terminal state
+
+  step_states:
+    - pending: Not yet started
+    - active: Currently executing
+    - completed: Successfully finished
+    - skipped: Skipped due to conditions
+    - failed: Failed with error
+
+# ============================================================================
+# Execution Flow
+# ============================================================================
+
+execution_flow:
+  1_initialize:
+    actions:
+      - Parse workflow definition
+      - Validate against schema
+      - Resolve configuration
+      - Load input files
+      - Initialize execution state
+      - Execute before_start hooks
+
+  2_execute_steps:
+    loop:
+      - Check step dependencies
+      - Execute before_step hooks
+      - Load step file (if markdown workflow)
+      - Execute step logic
+      - Validate step outputs
+      - Execute after_step hooks
+      - Update progress
+      - Create checkpoint (if interval reached)
+      - Handle user approval (if required)
+
+  3_complete:
+    success:
+      - Execute after_complete hooks
+      - Persist outputs
+      - Clean up resources
+      - Report completion
+
+    failure:
+      - Execute on_error hooks
+      - Attempt recovery (if enabled)
+      - Report failure
+      - Preserve state for debugging
+
+# ============================================================================
+# Variable Resolution
+# ============================================================================
+
+variables:
+  sources:
+    - config: From configuration files
+    - input: From user input
+    - computed: Calculated at runtime
+    - system: System-provided values
+
+  patterns:
+    simple: "{variable_name}"
+    config_ref: "{config_source}:property"
+    nested: "{config_source}:parent.child"
+
+  system_variables:
+    - project-root: Project root directory
+    - directory_name: Current directory name
+    - date: Current date/time
+    - user_name: User name from config
+    - output_folder: Output directory
+
+  resolution_order:
+    1. Direct value (if not a variable)
+    2. System variables
+    3. Workflow variables
+    4. Config source variables
+    5. Default value (if provided)
+    6. Error (if required and not found)
+
+# ============================================================================
+# Input/Output Handling
+# ============================================================================
+
+inputs:
+  definition:
+    - pattern: string         # Glob pattern or path
+    - loading_strategy: enum  # smart, eager, lazy, jit
+    - required: boolean
+    - alias: string           # Variable name for reference
+    - transform: string       # yaml, json, markdown, text
+
+  loading_strategies:
+    smart: Load based on file size and usage
+    eager: Load immediately at start
+    lazy: Load on first access
+    jit: Load just-in-time for each step
+
+outputs:
+  definition:
+    - path: string            # Output file path
+    - mode: enum              # create, append, replace, merge
+    - template: string        # Template file path
+    - validate: boolean       # Validate before write
+    - backup: boolean         # Create backup before overwrite
+
+# ============================================================================
+# Checkpoints and Recovery
+# ============================================================================
+
+checkpoints:
+  purpose: Enable recovery from failures
+  frequency: Configurable (default: after each step)
+
+  data:
+    - step_id: Current step
+    - timestamp: Checkpoint time
+    - state: Execution state
+    - context: Current context
+    - variables: Current variables
+    - step_states: Status of all steps
+
+  operations:
+    create:
+      - Serialize current state
+      - Store in checkpoint array
+      - Emit checkpoint event
+
+    restore:
+      - Load checkpoint by ID
+      - Restore step states
+      - Restore context and variables
+      - Resume from checkpoint step
+
+# ============================================================================
+# Error Handling
+# ============================================================================
+
+error_handling:
+  step_level:
+    - Catch error in step execution
+    - Execute on_error hooks
+    - Determine if step is required
+    - Apply recovery strategy
+
+  recovery_strategies:
+    retry:
+      max_attempts: 3
+      delay_ms: 1000
+      backoff: exponential
+
+    skip:
+      condition: Step is optional
+      action: Mark as skipped, continue
+
+    rollback:
+      action: Restore to last checkpoint
+      notify: User about rollback
+
+    prompt_user:
+      action: Wait for user decision
+      options: retry, skip, abort
+
+    abort:
+      action: Fail execution
+      preserve: State for debugging
+
+# ============================================================================
+# Hooks
+# ============================================================================
+
+hooks:
+  workflow_level:
+    - before_start: Before workflow begins
+    - after_complete: After successful completion
+    - on_error: On workflow-level error
+    - on_cancel: When workflow is cancelled
+
+  step_level:
+    - before_step: Before each step
+    - after_step: After each step
+    - step_error: On step error
+
+  hook_signature:
+    input:
+      - execution: Current execution state
+      - step: Current step (for step hooks)
+      - context: Plugin context
+
+    output:
+      - cancelled: boolean (for cancellable hooks)
+      - modified_context: object (optional)
+
+# ============================================================================
+# Step File Contract (Markdown Workflows)
+# ============================================================================
+
+step_file:
+  structure:
+    frontmatter:
+      - Step metadata and dependencies
+
+    content:
+      - Step instructions and rules
+      - Embedded validation criteria
+      - User interaction points
+
+  rules:
+    - Self-contained execution context
+    - No skipping steps without explicit skip logic
+    - User approval at designated gates
+    - State tracked in frontmatter
+    - Append-only document building
+
+  user_interaction:
+    - Present information
+    - Collect input
+    - Validate responses
+    - Update state
+    - Proceed or wait for approval
+
+# ============================================================================
+# Validation Rules
+# ============================================================================
+
+validation:
+  yaml_workflow:
+    - name must be non-empty
+    - description must be non-empty
+    - config_source must be valid path if present
+    - All referenced files must exist
+    - Variables must have valid sources
+
+  markdown_workflow:
+    - Frontmatter must be valid YAML
+    - name and description required
+    - Step files must follow naming convention
+    - Step dependencies must form valid DAG
+
+  step_files:
+    - Must be in steps/ directory
+    - Naming: step-XX-name.md (XX = two digits)
+    - Frontmatter must include step_id
+    - Dependencies must reference valid step IDs
+
+# ============================================================================
+# Extension Points
+# ============================================================================
+
+extensions:
+  hooks:
+    - workflow:before-start
+    - workflow:after-complete
+    - workflow:before-step
+    - workflow:after-step
+    - workflow:step-error
+    - workflow:checkpoint
+
+  customization:
+    - Custom step executors
+    - Custom variable resolvers
+    - Custom validation functions
+    - Custom recovery strategies
+
+  integration:
+    - Agent runtime
+    - State manager
+    - Plugin system
+    - Error handler
