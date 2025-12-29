@@ -1,0 +1,578 @@
+# MDS Content Creation OS - Task Definitions
+# CrewAI-compatible task configuration
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# PHASE 1: CREATIVE INTAKE
+# ═══════════════════════════════════════════════════════════════════════════════
+
+parse_brief:
+  description: |
+    Analyze the creative brief to extract complete creative intent:
+
+    LITERAL: What the words explicitly say
+    FUNCTIONAL: What they're trying to accomplish
+    STRATEGIC: What this enables for their brand/goal
+    EMOTIONAL: What feeling needs to be created
+    TEMPORAL: Why now? What's the context?
+
+    Brief: {brief}
+  expected_output: |
+    JSON structure containing:
+    {
+      "literal_intent": "...",
+      "functional_goal": "...",
+      "strategic_objective": "...",
+      "emotional_target": "...",
+      "temporal_context": "...",
+      "key_requirements": [...],
+      "constraints": [...],
+      "success_criteria": [...]
+    }
+  agent: brief_parser
+  async_execution: false
+
+analyze_brand:
+  description: |
+    Analyze brand context and guidelines for content creation:
+
+    Brand Context: {brand_context}
+
+    Extract:
+    - Core brand personality traits
+    - Visual language parameters
+    - Tone and voice guidelines
+    - Color psychology associations
+    - Typography preferences
+    - Prohibited elements
+  expected_output: |
+    JSON structure containing:
+    {
+      "brand_personality": [...],
+      "visual_language": {...},
+      "tone_voice": {...},
+      "color_palette": {...},
+      "typography": {...},
+      "prohibitions": [...],
+      "brand_alignment_score": 0-100
+    }
+  agent: brand_context
+  async_execution: true
+  context:
+    - parse_brief
+
+detect_platform:
+  description: |
+    Analyze the brief and determine optimal AI generation platforms:
+
+    Consider:
+    - Content duration requirements
+    - Visual complexity needs
+    - Platform strengths/weaknesses
+    - Quality vs. speed trade-offs
+    - Audio requirements
+
+    Intent: {parsed_intent}
+  expected_output: |
+    JSON structure containing:
+    {
+      "primary_platform": "sora|veo|runway|midjourney|dalle|ideogram|flux",
+      "secondary_platforms": [...],
+      "platform_rationale": "...",
+      "technical_specs": {
+        "duration": "...",
+        "aspect_ratio": "...",
+        "resolution": "...",
+        "frame_rate": "..."
+      },
+      "platform_limitations": [...],
+      "optimization_notes": [...]
+    }
+  agent: platform_detector
+  async_execution: true
+  context:
+    - parse_brief
+
+classify_format:
+  description: |
+    Classify the content format and optimize specifications:
+
+    Determine:
+    - Content category (Ad, Social, Narrative, Corporate, Product, Cinematic)
+    - Content subtype
+    - Duration constraints
+    - Aspect ratio requirements
+    - Platform-specific formatting
+
+    Intent: {parsed_intent}
+  expected_output: |
+    JSON structure containing:
+    {
+      "category": "...",
+      "subtype": "...",
+      "duration": {...},
+      "aspect_ratio": "...",
+      "key_considerations": [...],
+      "format_template": "...",
+      "pacing_guidance": {...}
+    }
+  agent: format_classifier
+  async_execution: true
+  context:
+    - parse_brief
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# PHASE 2: CREATIVE STRATEGY
+# ═══════════════════════════════════════════════════════════════════════════════
+
+design_visual_strategy:
+  description: |
+    Design the complete visual strategy as the Creative Director:
+
+    Core Questions:
+    - What is the CORE VISUAL IDEA that makes this work?
+    - What EMOTION does each moment need to evoke?
+    - What is the ONE THING the viewer must feel/remember?
+    - What makes this different from every other version?
+
+    Context:
+    - Intent: {parsed_intent}
+    - Platform: {platform_analysis}
+    - Format: {format_analysis}
+    - Brand: {brand_analysis}
+  expected_output: |
+    Comprehensive visual strategy document containing:
+
+    CORE VISUAL CONCEPT:
+    [2-4 richly evocative sentences]
+
+    THEMES: [5-7 comma-separated themes]
+
+    EMOTIONAL ARC: [Act 1] → [Act 2] → [Act 3] → [Resolution]
+
+    KEY DIFFERENTIATOR:
+    [What makes this unique]
+
+    VISUAL PILLARS:
+    - Pillar 1: ...
+    - Pillar 2: ...
+    - Pillar 3: ...
+
+    SUCCESS CRITERIA:
+    [Measurable outcomes]
+  agent: creative_director
+  async_execution: false
+  context:
+    - parse_brief
+    - detect_platform
+    - classify_format
+    - analyze_brand
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# PHASE 3: PRODUCTION DESIGN
+# ═══════════════════════════════════════════════════════════════════════════════
+
+design_cinematography:
+  description: |
+    Design the complete cinematography package:
+
+    Visual Strategy: {visual_strategy}
+
+    Design:
+    - Shot structure and progression
+    - Camera and lens choices (with emotional justification)
+    - Movement vocabulary with purpose
+    - Frame composition principles
+
+    Remember:
+    - ECU reveals intimacy, LS establishes scale
+    - Wide = vulnerability, telephoto = isolation
+    - Movement serves emotion, not spectacle
+  expected_output: |
+    CINEMATOGRAPHY PACKAGE:
+
+    CAMERA SYSTEM:
+    - Primary: [ARRI/RED/Sony] + justification
+    - Format: [Full Frame/Super 35/Large Format]
+
+    LENS STRATEGY:
+    - Primary Lens: [Brand + focal length]
+    - Secondary: [If needed]
+    - Aperture Range: [T-stop range]
+    - DOF Philosophy: [Shallow/Deep + reasoning]
+
+    SHOT PROGRESSION:
+    [For each shot:]
+    - Shot Type: [ECU/CU/MS/LS]
+    - Angle: [Eye level/Low/High/Dutch]
+    - Movement: [Static/Push/Pull/Orbit/Track]
+    - Emotional Purpose: [Why this choice]
+
+    MOVEMENT VOCABULARY:
+    - Speed: [Imperceptible/Slow/Medium/Fast]
+    - Character: [Deliberate/Urgent/Contemplative]
+    - Motivation: [What drives the movement]
+  agent: cinematographer
+  async_execution: false
+  context:
+    - design_visual_strategy
+
+design_lighting:
+  description: |
+    Design the lighting architecture:
+
+    Visual Strategy: {visual_strategy}
+    Cinematography: {cinematography}
+
+    Consider:
+    - Light as emotion (hard = tension, soft = romance)
+    - Motivated sources
+    - Color temperature psychology
+    - Practical vs. stylized
+  expected_output: |
+    LIGHTING DESIGN:
+
+    KEY LIGHT:
+    - Source: [Natural/Tungsten/LED]
+    - Quality: [Hard/Soft/Mixed]
+    - Direction: [Front/Side/Rim]
+    - Kelvin: [2700-8000K]
+    - Emotional Purpose: [...]
+
+    FILL STRATEGY:
+    - Ratio: [1:1 to 16:1]
+    - Character: [...]
+
+    SPECIAL ELEMENTS:
+    - Practicals: [On-set sources]
+    - Volumetrics: [Atmosphere/Haze]
+    - Color Gels: [If any]
+
+    LIGHTING EVOLUTION:
+    [How lighting changes through the piece]
+  agent: cinematographer
+  async_execution: true
+  context:
+    - design_visual_strategy
+    - design_cinematography
+
+design_narrative:
+  description: |
+    Design the narrative structure and emotional arc:
+
+    Visual Strategy: {visual_strategy}
+    Format: {format_analysis}
+
+    Engineer:
+    - 3-act micro-narrative (even in 8-second clips)
+    - Hook mechanics (0.8s attention capture)
+    - Emotional arc (anticipation → tension → release)
+    - Payoff timing for retention
+    - Pacing and rhythm
+  expected_output: |
+    NARRATIVE ARCHITECTURE:
+
+    HOOK (0-0.8s):
+    - Pattern interrupt: [...]
+    - Visual anchor: [...]
+    - Promise made: [...]
+
+    ACT STRUCTURE:
+
+    ACT 1 - ESTABLISHMENT (0s - Xs):
+    - Emotional state: [...]
+    - Visual approach: [...]
+    - Purpose: [...]
+
+    ACT 2 - DEVELOPMENT (Xs - Ys):
+    - Emotional state: [...]
+    - Tension mechanics: [...]
+    - Purpose: [...]
+
+    ACT 3 - RESOLUTION (Ys - End):
+    - Emotional state: [...]
+    - Payoff delivery: [...]
+    - Purpose: [...]
+
+    PACING LOGIC:
+    - Rhythm: [...]
+    - Breath points: [...]
+    - Cut timing: [...]
+
+    EMOTIONAL JOURNEY:
+    [Beginning state] → [Transformation] → [End state]
+  agent: narrative_architect
+  async_execution: true
+  context:
+    - design_visual_strategy
+
+design_environment:
+  description: |
+    Design the production environment and materials:
+
+    Visual Strategy: {visual_strategy}
+
+    Build:
+    - Location/environment specifications
+    - Set dressing hierarchy
+    - Material behavior descriptions
+    - Atmospheric elements
+    - Time-of-day character
+
+    Remember: Describe VISUAL APPEARANCE, not physics.
+    "Descending with viscous deliberation" not "Viscosity: 800 cP"
+  expected_output: |
+    PRODUCTION DESIGN:
+
+    ENVIRONMENT:
+    - Location: [...]
+    - Time of Day: [...]
+    - Season/Weather: [...]
+    - Practical Considerations: [...]
+
+    SET DRESSING:
+    - Hero Props: [Primary focus elements]
+    - Secondary Elements: [Supporting details]
+    - Atmosphere: [Background texture]
+
+    MATERIALS (Described as behavior, not physics):
+    [For each key material:]
+    - Material: [...]
+    - Visual Behavior: [Poetic description]
+    - Light Interaction: [...]
+    - Texture Story: [What wear/age tells us]
+
+    ATMOSPHERE:
+    - Volumetrics: [Fog/Haze/Dust]
+    - Environmental Particles: [...]
+    - Ambient Motion: [...]
+
+    COLOR PALETTE:
+    - Dominant: [...]
+    - Accent: [...]
+    - Psychological Purpose: [...]
+  agent: production_designer
+  async_execution: true
+  context:
+    - design_visual_strategy
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# PHASE 4: OUTPUT GENERATION
+# ═══════════════════════════════════════════════════════════════════════════════
+
+generate_video_prompt:
+  description: |
+    Generate production-ready video prompt for the target platform:
+
+    Platform: {platform}
+    Visual Strategy: {visual_strategy}
+    Cinematography: {cinematography}
+    Lighting: {lighting}
+    Narrative: {narrative}
+    Environment: {environment}
+
+    Apply platform-specific methodology:
+    - SORA 2 PRO: Prose-first, 150-250 words/shot, dense immersive prose
+    - VEO 3.1: JSON priority cascade, 7-layer architecture
+    - RUNWAY: Concise prose + motion hints
+    - KLING: Clear subject isolation
+
+    Avoid AI failure triggers:
+    - Fluid dynamics → Describe visual appearance
+    - Hands → Simple poses, expected outcomes
+    - Text/logos → Quality feeling, not literal text
+    - Reflections → Keep vague
+    - Steam/fog → Atmospheric, accept imperfection
+  expected_output: |
+    Platform-specific formatted prompt ready for generation.
+
+    For SORA: Full prose-first document with acts, shots, camera movement
+    For VEO: Complete JSON architecture with priority cascade
+    For RUNWAY: Concise prompt with motion description
+    For KLING: Subject-focused prompt with lighting notes
+  agent: video_prompt_writer
+  async_execution: false
+  context:
+    - design_visual_strategy
+    - design_cinematography
+    - design_lighting
+    - design_narrative
+    - design_environment
+
+generate_image_prompt:
+  description: |
+    Generate production-ready image prompt for the target platform:
+
+    Platform: {platform}
+    Visual Strategy: {visual_strategy}
+
+    Apply platform-specific format:
+    - MIDJOURNEY: Evocative prose + --ar --style --sref --v 6.1
+    - DALL-E: Precise instructions with composition details
+    - IDEOGRAM: Text-rendering optimized
+    - FLUX: Technical precision prose
+
+    Avoid:
+    - Specific text requests
+    - Complex hand poses
+    - Multiple reflective surfaces
+  expected_output: |
+    Platform-specific image prompt with:
+
+    CORE CONCEPT: [1-2 sentences]
+
+    DETAILED DESCRIPTION: [100-200 words]
+
+    TECHNICAL PARAMETERS:
+    - Aspect Ratio: [...]
+    - Style Reference: [...]
+    - Lighting: [...]
+    - Mood: [...]
+
+    PLATFORM SYNTAX: [Ready-to-use prompt]
+
+    NEGATIVE CONSIDERATIONS: [What to avoid]
+  agent: image_prompt_writer
+  async_execution: false
+  context:
+    - design_visual_strategy
+
+design_audio:
+  description: |
+    Design the audio architecture for the content:
+
+    Visual Strategy: {visual_strategy}
+    Narrative: {narrative}
+    Platform: {platform}
+
+    Design:
+    - Ambient soundscape
+    - Music direction
+    - Dialogue guidance (if applicable)
+    - Sound effects
+    - Silence moments
+  expected_output: |
+    AUDIO ARCHITECTURE:
+
+    SOUNDSCAPE:
+    - Ambient Base: [...]
+    - Environmental Elements: [...]
+    - Emotional Character: [...]
+
+    MUSIC DIRECTION:
+    - Style: [...]
+    - Tempo: [...]
+    - Key Emotional Beats: [...]
+    - Instrumentation: [...]
+
+    SYNC POINTS:
+    [Specific audio-visual sync moments]
+
+    DIALOGUE (if applicable):
+    - Tone: [...]
+    - Delivery: [...]
+    - Key Lines: [...]
+
+    SILENCE:
+    [When and why to use silence]
+  agent: audio_designer
+  async_execution: true
+  context:
+    - design_visual_strategy
+    - design_narrative
+
+generate_storyboard:
+  description: |
+    Generate comprehensive visual storyboard:
+
+    Visual Strategy: {visual_strategy}
+    Cinematography: {cinematography}
+    Narrative: {narrative}
+
+    Create shot-by-shot breakdown with:
+    - Visual representation description
+    - Camera specifications
+    - Emotional notes
+    - Technical requirements
+    - Timing
+  expected_output: |
+    VISUAL STORYBOARD:
+
+    [For each shot:]
+
+    ═══════════════════════════════════════════════════
+    SHOT [N]: [EVOCATIVE TITLE]
+    ═══════════════════════════════════════════════════
+
+    VISUAL:
+    [Detailed description of what's in frame]
+
+    CAMERA:
+    - Shot Type: [...]
+    - Lens: [...]
+    - Movement: [...]
+
+    TIMING:
+    - Duration: [...]
+    - In/Out Points: [...]
+
+    EMOTION:
+    - Character State: [...]
+    - Viewer Experience: [...]
+
+    TECHNICAL:
+    - Lighting: [...]
+    - Special Considerations: [...]
+
+    IMAGE PROMPT:
+    [For storyboard frame generation]
+  agent: storyboard_artist
+  async_execution: false
+  context:
+    - design_visual_strategy
+    - design_cinematography
+    - design_narrative
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# QUALITY ASSURANCE
+# ═══════════════════════════════════════════════════════════════════════════════
+
+validate_output:
+  description: |
+    Validate all outputs against quality standards:
+
+    PRE-GENERATION CHECKLIST:
+    - [ ] Intent clearly understood
+    - [ ] Platform constraints identified
+    - [ ] Duration/format determined
+    - [ ] Visual style defined
+    - [ ] Narrative structure planned
+    - [ ] AI limitations accounted for
+
+    POST-GENERATION VALIDATION:
+    - [ ] Platform specs met (aspect, duration, safe zones)
+    - [ ] No AI failure triggers (text, hands, physics violations)
+    - [ ] Emotional arc complete
+    - [ ] Each shot earns its place
+    - [ ] Prose density meets standard
+    - [ ] Brand consistency maintained
+    - [ ] Ready for generation
+  expected_output: |
+    QUALITY VALIDATION REPORT:
+
+    COMPLIANCE SCORE: [0-100]
+
+    CHECKLIST RESULTS:
+    [Each item with PASS/FAIL/WARNING]
+
+    ISSUES IDENTIFIED:
+    [Any problems found]
+
+    RECOMMENDATIONS:
+    [Specific fixes needed]
+
+    FINAL STATUS: [APPROVED / NEEDS REVISION]
+  agent: quality_reviewer
+  async_execution: false
+  context:
+    - generate_video_prompt
+    - generate_image_prompt

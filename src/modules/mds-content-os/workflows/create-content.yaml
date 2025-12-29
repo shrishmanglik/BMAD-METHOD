@@ -1,0 +1,262 @@
+# MDS Content Creation OS - Main Workflow
+# Complete creative pipeline from brief to production-ready output
+
+name: "create-content"
+description: |
+  Full creative process workflow that orchestrates all agents
+  from intake through output generation.
+
+version: "1.0.0"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# WORKFLOW CONFIGURATION
+# ═══════════════════════════════════════════════════════════════════════════════
+
+config:
+  verbose: true
+  memory: true
+  max_iterations: 10
+  allow_parallel: true
+  quality_gates_enabled: true
+
+# Input parameters
+inputs:
+  brief:
+    type: string
+    required: true
+    description: "The creative brief or request"
+  platform:
+    type: string
+    required: false
+    default: "auto"
+    description: "Target platform (sora, veo, runway, midjourney, dalle, auto)"
+  brand_context:
+    type: string
+    required: false
+    description: "Brand guidelines or context"
+  output_format:
+    type: string
+    required: false
+    default: "full"
+    description: "Output format (full, prompt-only, storyboard)"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# WORKFLOW PHASES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+phases:
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # PHASE 1: CREATIVE INTAKE
+  # ─────────────────────────────────────────────────────────────────────────────
+  intake:
+    name: "Creative Intake"
+    description: "Parse brief, detect platform, classify format"
+
+    tasks:
+      - task: parse_brief
+        agent: brief_parser
+        priority: 1
+
+      - task: analyze_brand
+        agent: brand_context
+        priority: 2
+        depends_on: [parse_brief]
+        optional: true
+        condition: "brand_context is not empty"
+
+      - task: detect_platform
+        agent: platform_detector
+        priority: 2
+        depends_on: [parse_brief]
+        parallel_with: [analyze_brand, classify_format]
+
+      - task: classify_format
+        agent: format_classifier
+        priority: 2
+        depends_on: [parse_brief]
+        parallel_with: [analyze_brand, detect_platform]
+
+    quality_gate:
+      name: "Intake Validation"
+      criteria:
+        - "Intent clearly understood"
+        - "Platform identified or auto-selected"
+        - "Format classified"
+      pass_threshold: 0.9
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # PHASE 2: CREATIVE STRATEGY
+  # ─────────────────────────────────────────────────────────────────────────────
+  strategy:
+    name: "Creative Strategy"
+    description: "Design visual strategy and core creative direction"
+    depends_on: [intake]
+
+    tasks:
+      - task: design_visual_strategy
+        agent: creative_director
+        priority: 1
+        inputs:
+          parsed_intent: "{intake.parse_brief.output}"
+          platform_analysis: "{intake.detect_platform.output}"
+          format_analysis: "{intake.classify_format.output}"
+          brand_analysis: "{intake.analyze_brand.output}"
+
+    quality_gate:
+      name: "Strategy Validation"
+      criteria:
+        - "Core visual idea defined"
+        - "Emotional arc planned"
+        - "Key differentiator identified"
+      pass_threshold: 0.95
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # PHASE 3: PRODUCTION DESIGN
+  # ─────────────────────────────────────────────────────────────────────────────
+  production:
+    name: "Production Design"
+    description: "Design cinematography, lighting, narrative, environment"
+    depends_on: [strategy]
+
+    tasks:
+      - task: design_cinematography
+        agent: cinematographer
+        priority: 1
+
+      - task: design_lighting
+        agent: cinematographer
+        priority: 2
+        depends_on: [design_cinematography]
+
+      - task: design_narrative
+        agent: narrative_architect
+        priority: 1
+        parallel_with: [design_cinematography]
+
+      - task: design_environment
+        agent: production_designer
+        priority: 1
+        parallel_with: [design_cinematography, design_narrative]
+
+    quality_gate:
+      name: "Production Validation"
+      criteria:
+        - "Shot structure complete"
+        - "Lighting design defined"
+        - "Narrative arc engineered"
+        - "Environment specified"
+      pass_threshold: 0.9
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # PHASE 4: OUTPUT GENERATION
+  # ─────────────────────────────────────────────────────────────────────────────
+  output:
+    name: "Output Generation"
+    description: "Generate platform-specific prompts and deliverables"
+    depends_on: [production]
+
+    tasks:
+      # Video output (conditional)
+      - task: generate_video_prompt
+        agent: video_prompt_writer
+        priority: 1
+        condition: "platform in ['sora', 'veo', 'runway', 'kling', 'auto'] or content_type == 'video'"
+        inputs:
+          platform: "{intake.detect_platform.output.primary_platform}"
+          visual_strategy: "{strategy.design_visual_strategy.output}"
+          cinematography: "{production.design_cinematography.output}"
+          lighting: "{production.design_lighting.output}"
+          narrative: "{production.design_narrative.output}"
+          environment: "{production.design_environment.output}"
+
+      # Image output (conditional)
+      - task: generate_image_prompt
+        agent: image_prompt_writer
+        priority: 1
+        condition: "platform in ['midjourney', 'dalle', 'ideogram', 'flux', 'auto'] or content_type == 'image'"
+        inputs:
+          platform: "{intake.detect_platform.output.primary_platform}"
+          visual_strategy: "{strategy.design_visual_strategy.output}"
+
+      # Audio design (conditional)
+      - task: design_audio
+        agent: audio_designer
+        priority: 2
+        condition: "platform in ['sora', 'veo'] or has_audio == true"
+        parallel_with: [generate_video_prompt, generate_image_prompt]
+
+      # Storyboard (conditional)
+      - task: generate_storyboard
+        agent: storyboard_artist
+        priority: 2
+        condition: "output_format in ['full', 'storyboard']"
+        parallel_with: [design_audio]
+
+    quality_gate:
+      name: "Output Validation"
+      criteria:
+        - "Platform specs met"
+        - "No AI failure triggers"
+        - "Emotional arc complete"
+        - "Prose density appropriate"
+      pass_threshold: 0.95
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # PHASE 5: QUALITY ASSURANCE
+  # ─────────────────────────────────────────────────────────────────────────────
+  qa:
+    name: "Quality Assurance"
+    description: "Final validation and approval"
+    depends_on: [output]
+
+    tasks:
+      - task: validate_output
+        agent: quality_reviewer
+        priority: 1
+        inputs:
+          video_prompt: "{output.generate_video_prompt.output}"
+          image_prompt: "{output.generate_image_prompt.output}"
+          storyboard: "{output.generate_storyboard.output}"
+
+    quality_gate:
+      name: "Final Approval"
+      criteria:
+        - "All checklist items passed"
+        - "Brand compliance verified"
+        - "Ready for generation"
+      pass_threshold: 1.0
+      action_on_fail: "return_for_revision"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# OUTPUT STRUCTURE
+# ═══════════════════════════════════════════════════════════════════════════════
+
+outputs:
+  production_package:
+    description: "Complete production package"
+    structure:
+      creative_strategy:
+        source: "{strategy.design_visual_strategy.output}"
+      cinematography:
+        source: "{production.design_cinematography.output}"
+      lighting:
+        source: "{production.design_lighting.output}"
+      narrative:
+        source: "{production.design_narrative.output}"
+      environment:
+        source: "{production.design_environment.output}"
+      video_prompt:
+        source: "{output.generate_video_prompt.output}"
+        condition: "video_prompt exists"
+      image_prompt:
+        source: "{output.generate_image_prompt.output}"
+        condition: "image_prompt exists"
+      audio_design:
+        source: "{output.design_audio.output}"
+        condition: "audio_design exists"
+      storyboard:
+        source: "{output.generate_storyboard.output}"
+        condition: "storyboard exists"
+      validation:
+        source: "{qa.validate_output.output}"

@@ -1,0 +1,135 @@
+# MDS Content Creation Operating System
+# AI Creative Director Multi-Agent System
+
+code: mds
+name: "MDS Content Creation OS"
+version: "1.0.0"
+description: |
+  An AI Creative Director system that THINKS like a cinematographer,
+  DESIGNS like a director, and CREATES like a production house.
+
+  This is not a prompt generator - it's a complete creative production pipeline.
+
+author: "MDS Creative Systems"
+default_selected: false
+
+header: "MDS Content Creation OS: AI Creative Director"
+subheader: "Multi-Agent System for Professional Content Production"
+
+# System Philosophy
+philosophy:
+  core_principle: "Every frame tells a story. Every shot has purpose. Every detail earns its place."
+  approach: "THINK → DESIGN → CREATE"
+  differentiation: "Creative problem-solving, not template-filling"
+
+# Configuration Variables
+project_name:
+  prompt: "What is the name of your content project?"
+  default: "{directory_name}"
+  result: "{value}"
+
+default_platform:
+  prompt: "What is your primary output platform?"
+  default: "sora"
+  single-select:
+    - value: "sora"
+      label: "Sora 2 Pro - Long-form video (5-20s)"
+    - value: "veo"
+      label: "VEO 3.1 - Short-form video (8s max)"
+    - value: "runway"
+      label: "Runway Gen-3 - Fast iteration video"
+    - value: "midjourney"
+      label: "Midjourney V6.1 - Artistic images"
+    - value: "dalle"
+      label: "DALL-E 3 - Precise images"
+    - value: "multi"
+      label: "Multi-platform output"
+
+content_type:
+  prompt: "What type of content are you primarily creating?"
+  default: "video"
+  single-select:
+    - value: "video"
+      label: "Video Content (Ads, Social, Narrative)"
+    - value: "image"
+      label: "Image Content (Social, Product, Editorial)"
+    - value: "storyboard"
+      label: "Storyboards (Visual + Script)"
+    - value: "campaign"
+      label: "Full Campaign (Multi-format)"
+
+brand_context_file:
+  prompt: "Path to brand guidelines file (optional)"
+  default: ""
+  result: "{value}"
+
+output_folder:
+  prompt: "Where should generated content be saved?"
+  default: "{project_root}/mds-output"
+  result: "{value}"
+
+# Architecture Layers
+layers:
+  intake:
+    name: "Creative Intake Layer"
+    description: "Parses briefs, detects platforms, classifies formats"
+    components:
+      - brief_parser
+      - brand_context
+      - platform_detector
+      - format_classifier
+
+  brain:
+    name: "Creative Director Brain"
+    description: "Cinematographer + Narrative + Production + Optimization"
+    components:
+      - cinematographer_intelligence
+      - narrative_architect
+      - production_designer
+      - platform_optimizer
+
+  output:
+    name: "Output Generation Layer"
+    description: "Platform-specific prompt generation"
+    components:
+      - video_prompts
+      - image_prompts
+      - audio_design
+      - storyboard
+      - multi_format
+
+# Command Interface
+commands:
+  create:
+    description: "Full creative process → multi-platform output"
+    usage: "/create [brief]"
+  video:
+    description: "Video-optimized output (auto-select Sora/VEO)"
+    usage: "/video [brief]"
+  sora:
+    description: "Sora 2 Pro format specifically"
+    usage: "/sora [brief]"
+  veo:
+    description: "VEO 3.1 JSON format specifically"
+    usage: "/veo [brief]"
+  image:
+    description: "Image prompt (auto-select MJ/DALL-E)"
+    usage: "/image [brief]"
+  mj:
+    description: "Midjourney format specifically"
+    usage: "/mj [brief]"
+  storyboard:
+    description: "Full storyboard with shot breakdowns"
+    usage: "/storyboard [brief]"
+  adapt:
+    description: "Convert existing output to new platform"
+    usage: "/adapt [platform]"
+  refine:
+    description: "Iterate on previous generation"
+    usage: "/refine [feedback]"
+  series:
+    description: "Multi-piece content series"
+    usage: "/series [brief]"
+  breakdown:
+    description: "Reverse-engineer existing content"
+    usage: "/breakdown [url/description]"

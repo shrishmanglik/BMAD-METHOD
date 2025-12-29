@@ -1,0 +1,71 @@
+# MDS Content Creation OS - Storyboard Workflow
+# Complete storyboard generation with visual breakdowns
+
+name: "storyboard"
+description: "Full storyboard creation with shot-by-shot breakdowns"
+version: "1.0.0"
+
+config:
+  verbose: true
+  memory: true
+  max_iterations: 8
+
+inputs:
+  brief:
+    type: string
+    required: true
+  duration:
+    type: number
+    required: false
+    description: "Target duration in seconds"
+  style:
+    type: string
+    required: false
+    default: "cinematic"
+
+phases:
+  intake:
+    tasks:
+      - task: parse_brief
+        agent: brief_parser
+      - task: classify_format
+        agent: format_classifier
+        depends_on: [parse_brief]
+
+  creative:
+    depends_on: [intake]
+    tasks:
+      - task: design_visual_strategy
+        agent: creative_director
+      - task: design_cinematography
+        agent: cinematographer
+        depends_on: [design_visual_strategy]
+      - task: design_narrative
+        agent: narrative_architect
+        depends_on: [design_visual_strategy]
+        parallel_with: [design_cinematography]
+      - task: design_environment
+        agent: production_designer
+        depends_on: [design_visual_strategy]
+        parallel_with: [design_cinematography, design_narrative]
+
+  storyboard:
+    depends_on: [creative]
+    tasks:
+      - task: generate_storyboard
+        agent: storyboard_artist
+        inputs:
+          visual_strategy: "{creative.design_visual_strategy.output}"
+          cinematography: "{creative.design_cinematography.output}"
+          narrative: "{creative.design_narrative.output}"
+          environment: "{creative.design_environment.output}"
+
+outputs:
+  storyboard:
+    source: "{storyboard.generate_storyboard.output}"
+  creative_package:
+    structure:
+      visual_strategy: "{creative.design_visual_strategy.output}"
+      cinematography: "{creative.design_cinematography.output}"
+      narrative: "{creative.design_narrative.output}"
+      environment: "{creative.design_environment.output}"
