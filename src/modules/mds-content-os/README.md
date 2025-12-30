@@ -1,11 +1,28 @@
-# MDS Content Creation Operating System
+# MDS CONTENT CREATION OS v2.0
 
-## The Vision
+## An Autonomous AI Creative Production System
 
-This is not a prompt generator. This is an **AI Creative Director** that:
-- **THINKS** like a cinematographer (visual language, shot grammar, emotional beats)
-- **DESIGNS** like a director (narrative structure, pacing, dramatic tension)
-- **CREATES** like a production house (platform-optimized, format-aware, deployment-ready)
+This is **not** a prompt template library.
+This is **not** a configuration system.
+This is a **complete AI creative production studio**.
+
+---
+
+## What It Does
+
+```
+INPUT: "Create a luxury watch commercial"
+
+OUTPUT:
+├── Creative strategy with 3 distinct concepts
+├── Recommended approach with rationale
+├── Sora 2 Pro prompt (20s hero video)
+├── VEO 3.1 prompts (5 social cuts)
+├── Midjourney prompts (hero, lifestyle, detail shots)
+├── Audio direction (music, sound design)
+├── Storyboard with shot-by-shot breakdown
+└── Production notes for execution
+```
 
 ---
 
@@ -13,65 +30,63 @@ This is not a prompt generator. This is an **AI Creative Director** that:
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                    MDS CONTENT CREATION OPERATING SYSTEM                     │
+│                    MDS CONTENT CREATION OS v2.0                              │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                              │
-│  ┌─────────────────────────────────────────────────────────────────────┐    │
-│  │                      CREATIVE INTAKE LAYER                          │    │
-│  │  Brief Parser → Brand Context → Platform Detector → Format Classifier│    │
-│  └─────────────────────────────────────────────────────────────────────┘    │
-│                                    │                                         │
-│                                    ▼                                         │
-│  ┌─────────────────────────────────────────────────────────────────────┐    │
-│  │                    CREATIVE DIRECTOR BRAIN                          │    │
-│  │  Cinematographer Intelligence │ Narrative Architect                 │    │
-│  │  Production Designer          │ Platform Optimizer                  │    │
-│  └─────────────────────────────────────────────────────────────────────┘    │
-│                                    │                                         │
-│                                    ▼                                         │
-│  ┌─────────────────────────────────────────────────────────────────────┐    │
-│  │                      OUTPUT GENERATION LAYER                        │    │
-│  │  Video Prompts │ Image Prompts │ Audio Design │ Storyboards         │    │
-│  └─────────────────────────────────────────────────────────────────────┘    │
+│  ORCHESTRATOR ─────► Routes all operations intelligently                     │
+│       │                                                                      │
+│       ├──► CREATIVE STRATEGIST ───► Multi-concept development               │
+│       │                                                                      │
+│       ├──► CINEMATOGRAPHER ───────► Emotional shot design                   │
+│       │                                                                      │
+│       ├──► NARRATIVE ARCHITECT ───► Arc engineering                         │
+│       │                                                                      │
+│       ├──► PRODUCTION DESIGNER ───► World building                          │
+│       │                                                                      │
+│       ├──► PLATFORM OPTIMIZER ────► Native outputs                          │
+│       │    ├── Sora 2 Pro (prose-first)                                     │
+│       │    ├── VEO 3.1 (JSON cascade)                                       │
+│       │    ├── Midjourney (prose + params)                                  │
+│       │    └── Runway, Flux, DALL-E, etc.                                   │
+│       │                                                                      │
+│       ├──► QUALITY VALIDATOR ─────► AI failure prevention                   │
+│       │                                                                      │
+│       └──► LEARNING ENGINE ───────► Self-improvement                        │
 │                                                                              │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Supported Platforms
+## Quick Start
 
-### Video Generation
-| Platform | Duration | Format |
-|----------|----------|--------|
-| **Sora 2 Pro** | 5-20s | Prose-first (150-250 words/shot) |
-| **VEO 3.1** | 8s max | JSON Priority Cascade |
-| **Runway Gen-3** | 5-10s | Concise prose + motion |
-| **Kling AI 1.6** | 5-10s | Subject-focused |
+### Google AI Studio Setup
 
-### Image Generation
-| Platform | Strengths | Format |
-|----------|-----------|--------|
-| **Midjourney V6.1** | Artistic, composition | Prose + parameters |
-| **DALL-E 3** | Instruction following | Precise instructions |
-| **Flux Pro** | Photorealism | Technical precision |
-| **Ideogram 2.0** | Text/logos | Text-optimized |
+1. Create new project in [Google AI Studio](https://aistudio.google.com)
+2. Upload: `system/MASTER-SYSTEM-PROMPT.md` as System Instruction
+3. Upload knowledge files from `/knowledge/`
+4. Set temperature: 0.8, max tokens: 8192
+5. Type `/status` to verify
+
+See `GOOGLE-AI-STUDIO-SETUP.md` for detailed instructions.
 
 ---
 
-## Command Interface
+## Commands
 
-| Command | Action |
-|---------|--------|
-| `/create [brief]` | Full creative process → multi-platform output |
-| `/video [brief]` | Video-optimized output (auto-select Sora/VEO) |
+| Command | Description |
+|---------|-------------|
+| `/create [brief]` | Full creative process, multi-platform output |
+| `/video [brief]` | Video-optimized, auto-selects platform |
+| `/image [brief]` | Image-optimized, auto-selects platform |
+| `/quick [brief]` | Fast single output |
+| `/campaign [brief]` | Full production package |
 | `/sora [brief]` | Sora 2 Pro format specifically |
-| `/veo [brief]` | VEO 3.1 JSON format specifically |
-| `/image [brief]` | Image prompt (auto-select MJ/DALL-E) |
-| `/mj [brief]` | Midjourney format specifically |
-| `/storyboard [brief]` | Full storyboard with shot breakdowns |
-| `/adapt [platform]` | Convert existing output to new platform |
-| `/refine [feedback]` | Iterate on previous generation |
+| `/veo [brief]` | VEO 3.1 JSON format |
+| `/mj [brief]` | Midjourney with parameters |
+| `/adapt [platform]` | Convert to new platform |
+| `/refine [feedback]` | Iterate on previous output |
+| `/status` | System status |
 
 ---
 
@@ -79,71 +94,91 @@ This is not a prompt generator. This is an **AI Creative Director** that:
 
 ```
 mds-content-os/
-├── module.yaml                     # System configuration
-├── README.md                       # This file
-├── GOOGLE-AI-STUDIO-IMPLEMENTATION.md
+├── README.md                          # This file
+├── GOOGLE-AI-STUDIO-SETUP.md          # Setup guide
 │
-├── agents/
-│   └── creative-director.md        # Main Creative Director prompt
-│
-├── config/
-│   ├── agents.yaml                 # Agent definitions (CrewAI-compatible)
-│   ├── tasks.yaml                  # Task workflows
-│   ├── tools.yaml                  # Tool specifications
-│   └── commands.yaml               # Command interface
+├── system/
+│   └── MASTER-SYSTEM-PROMPT.md        # Complete system prompt
 │
 ├── knowledge/
-│   ├── visual-language-reference.md    # Cinematography reference
-│   ├── ai-forensics-database.md        # AI limitations & solutions
-│   └── platform-specifications.md      # Platform specs
+│   ├── visual-language-reference.md   # Cinematography knowledge
+│   ├── ai-forensics-database.md       # AI failure prevention
+│   └── platform-specifications.md     # Platform-specific formats
 │
-└── workflows/
-    ├── create-content.yaml         # Full creative pipeline
-    ├── video-only.yaml             # Video-focused workflow
-    ├── image-only.yaml             # Image-focused workflow
-    └── storyboard.yaml             # Storyboard workflow
+├── docs/
+│   ├── PRD-v2.md                      # Product requirements
+│   ├── WORKFLOW-ARCHITECTURE.md       # System flow diagrams
+│   └── FEATURE-SPECIFICATIONS.md      # Feature details
+│
+├── config/                            # CrewAI-compatible configs
+│   ├── agents.yaml
+│   ├── tasks.yaml
+│   ├── tools.yaml
+│   └── commands.yaml
+│
+└── workflows/                         # Workflow definitions
+    ├── create-content.yaml
+    ├── video-only.yaml
+    ├── image-only.yaml
+    └── storyboard.yaml
 ```
 
 ---
 
-## Quick Start
+## Key Features
 
-### For Google AI Studio
+### 1. Intelligent Orchestration
+System automatically determines the right processing path based on your input.
 
-1. Upload all files from `knowledge/` folder
-2. Upload `agents/creative-director.md`
-3. Copy system prompt from `GOOGLE-AI-STUDIO-IMPLEMENTATION.md`
-4. Set temperature to 0.7-0.9
-5. Start with `/create [your brief]`
+### 2. Multi-Concept Strategy
+Generates genuinely different creative approaches, not variations.
 
-### For CrewAI / Agent Framework
+### 3. Deep Cinematography
+Every shot has emotional purpose, not just technical specs.
 
-1. Use `config/agents.yaml` for agent definitions
-2. Use `config/tasks.yaml` for task workflows
-3. Use `config/tools.yaml` for tool specifications
-4. Orchestrate with `workflows/create-content.yaml`
+### 4. AI Failure Prevention
+Built-in knowledge of what AI generators can't do well.
 
----
+### 5. Platform-Native Output
+Prompts designed FOR each platform, not converted.
 
-## The Golden Rules
-
-1. **Describe APPEARANCE, not PHYSICS** - "crystalline shards" not "viscosity 1.2 cP"
-2. **Simple hand poses ONLY** - Avoid complex finger articulation
-3. **Reflections stay VAGUE** - No specific reflected content
-4. **Text/logos in SOFT FOCUS** - Describe feeling, not literal text
-5. **Accept IMPERFECTION** - Real cameras have flaws
-6. **Physics through POETRY** - Paint what it looks like
+### 6. Self-Improvement
+System learns from every generation.
 
 ---
 
-## Credits
+## The Difference
 
-Built on research from:
-- CrewAI multi-agent framework patterns
-- Microsoft AutoGen conversational agents
-- Claude Agents architecture principles
-- 7,000+ AI video generation experiments
+| Traditional Approach | MDS Content OS |
+|---------------------|----------------|
+| "Write me a prompt" | Autonomous creative production |
+| Template filling | Strategic problem-solving |
+| Single output | Complete production package |
+| Platform-agnostic | Platform-native |
+| Manual iteration | Self-improving |
+| Physics specifications | Visual poetry |
+| Shot lists | Emotional cinematography |
 
 ---
 
-*"Every frame tells a story. Every shot has purpose. Every detail earns its place."*
+## Documentation
+
+- **PRD-v2.md** — Full product requirements and vision
+- **WORKFLOW-ARCHITECTURE.md** — System flow and agent communication
+- **FEATURE-SPECIFICATIONS.md** — Detailed feature specs
+- **GOOGLE-AI-STUDIO-SETUP.md** — Implementation guide
+
+---
+
+## Philosophy
+
+> "Every frame tells a story. Every shot has purpose. Every detail earns its place."
+
+We're not generating prompts. We're creating cinema.
+
+---
+
+## Version History
+
+- **v2.0** — Complete system rewrite with autonomous agents, PRD, workflow architecture
+- **v1.0** — Initial configuration-based system
